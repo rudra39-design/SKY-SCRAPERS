@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCTA 8.1 — S-RAT Octacopter Rescue Drone</title>
+    <meta name="description" content="OCTA 8.1 amphibious search, rescue, surveillance and wind-assisted energy harvesting octacopter. Interactive engineering laboratory." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      /* ── OCTA 8.1 secure access gate ───────────────────────────── */
+      #octa-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          radial-gradient(1100px 600px at 80% -10%, rgba(8, 145, 178, 0.22), transparent 60%),
+          radial-gradient(800px 500px at 8% 110%, rgba(234, 88, 12, 0.14), transparent 55%),
+          #071422;
+        overflow: hidden;
+        font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+      #octa-gate::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(8, 145, 178, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(8, 145, 178, 0.08) 1px, transparent 1px);
+        background-size: 32px 32px;
+        pointer-events: none;
+      }
+      #octa-gate::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 30%;
+        background: linear-gradient(180deg, transparent, rgba(0, 194, 224, 0.07), transparent);
+        animation: octa-scan 5s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes octa-scan {
+        0% { transform: translateY(-120%); }
+        100% { transform: translateY(420%); }
+      }
+      #octa-gate.unlocked {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      body.octa-locked {
+        overflow: hidden;
+      }
+      .octa-card {
+        position: relative;
+        width: min(560px, 100%);
+        border: 1px solid rgba(103, 232, 249, 0.18);
+        border-radius: 20px;
+        background: rgba(11, 31, 58, 0.82);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+      }
+      .octa-card-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(103, 232, 249, 0.14);
+        background: rgba(7, 20, 34, 0.7);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #67e8f9;
+      }
+      .octa-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 10px #22c55e;
+        animation: octa-blink 1.6s ease-in-out infinite;
+        display: inline-block;
+        margin-right: 8px;
+      }
+      @keyframes octa-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.25; }
+      }
+      .octa-card-body {
+        padding: 30px 28px 26px;
+      }
+      .octa-kicker {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #f97316;
+      }
+      .octa-title {
+        margin: 10px 0 8px;
+        font-family: "Outfit", sans-serif;
+        font-weight: 800;
+        font-size: clamp(26px, 5vw, 36px);
+        line-height: 1.05;
+        color: #f8fafc;
+      }
+      .octa-sub {
+        margin: 0 0 22px;
+        font-size: 14px;
+        line-height: 1.55;
+        color: #94a3b8;
+        max-width: 44ch;
+      }
+      .octa-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+      .octa-chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 999px;
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .octa-label {
+        display: block;
+        margin-bottom: 8px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #67e8f9;
+      }
+      .octa-row {
+        display: flex;
+        gap: 10px;
+      }
+      #octa-pass {
+        flex: 1;
+        min-width: 0;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: rgba(7, 20, 34, 0.85);
+        color: #f8fafc;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 15px;
+        letter-spacing: 0.18em;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      #octa-pass::placeholder {
+        color: #475569;
+        letter-spacing: 0.12em;
+      }
+      #octa-pass:focus {
+        border-color: #22d3ee;
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.22);
+      }
+      #octa-submit {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: #fff;
+        font-family: "Outfit", sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+        box-shadow: 0 8px 24px rgba(234, 88, 12, 0.35);
+      }
+      #octa-submit:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+      }
+      #octa-submit:active {
+        transform: translateY(0);
+      }
+      #octa-error {
+        min-height: 18px;
+        margin-top: 10px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #f87171;
+      }
+      #octa-error.ok {
+        color: #4ade80;
+      }
+      .octa-hint {
+        margin-top: 14px;
+        font-size: 11px;
+        color: #64748b;
+      }
+      .octa-hint code {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: #67e8f9;
+        background: rgba(8, 145, 178, 0.12);
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      .octa-card.shake {
+        animation: octa-shake 0.45s ease;
+      }
+      @keyframes octa-shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-10px); }
+        40% { transform: translateX(9px); }
+        60% { transform: translateX(-6px); }
+        80% { transform: translateX(4px); }
+      }
+      @media (max-width: 480px) {
+        .octa-row { flex-direction: column; }
+        #octa-submit { width: 100%; }
+      }
+    </style>
+  </head>
+  <body class="octa-locked">
+    <!-- ── Password gate (renders above the React app) ─────────── -->
+    <div id="octa-gate" role="dialog" aria-modal="true" aria-labelledby="octa-gate-title">
+      <div class="octa-card" id="octa-card">
+        <div class="octa-card-bar">
+          <span><span class="octa-dot"></span>OCTA 8.1 // SECURE ACCESS</span>
+          <span>S-RAT SAR LINK</span>
+        </div>
+        <div class="octa-card-body">
+          <p class="octa-kicker">Amphibious Rescue Laboratory</p>
+          <h1 class="octa-title" id="octa-gate-title">Authorization required</h1>
+          <p class="octa-sub">
+            This console hosts the S-RAT octacopter engineering laboratory — 3D inspection,
+            energy calculations and mission simulation. Enter the access code to continue.
+          </p>
+          <div class="octa-status">
+            <span class="octa-chip">System · Armed</span>
+            <span class="octa-chip">LoRa · Standby</span>
+            <span class="octa-chip">8 rotors · Ready</span>
+          </div>
+          <form id="octa-form" autocomplete="off">
+            <label class="octa-label" for="octa-pass">Enter access code</label>
+            <div class="octa-row">
+              <input id="octa-pass" name="octa-pass" type="password" placeholder="••••••" autofocus />
+              <button id="octa-submit" type="submit">Unlock</button>
+            </div>
+            <p id="octa-error" aria-live="polite"></p>
+          </form>
+          <p class="octa-hint">Demo access code: <code>OCTA81</code></p>
+          <p class="octa-hint" style="margin-top:6px; color:#7dd3fc;">
+            Privacy notice: when this page opens, basic visit info (device type, browser,
+            time) is sent to the project owner. No precise location or personal data is collected.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        /* ── VISIT NOTIFICATION ────────────────────────────────────────
+           When anyone opens this site you receive a message with basic
+           device info. Channels (all optional, can run together):
+
+           EMAIL · on by default via FormSubmit relay (NOTIFY_EMAIL).
+             The very first report email contains a one-time activation
+             link — click it once and every future visit arrives automatically.
+
+           OPTION A · Telegram bot
+             1. Create a bot with @BotFather, copy its token.
+             2. Get your chat id (message @userinfobot).
+             3. Fill both constants.
+
+           OPTION B · Any webhook (Discord, Make, Zapier, your server)
+             Set NOTIFY_URL to your endpoint; a JSON payload is POSTed.
+
+           Only non-sensitive data is sent (no GPS, no fingerprinting),
+           once per browser session, and the gate shows a privacy note.
+        ─────────────────────────────────────────────────────────────── */
+        var NOTIFY_EMAIL = "navadiyarudra39@gmail.com"; // visit reports land here (FormSubmit relay)
+        var TELEGRAM_BOT_TOKEN = ""; // e.g. "123456:ABC-DEF..."
+        var TELEGRAM_CHAT_ID = "";   // e.g. "987654321"
+        var NOTIFY_URL = "";         // generic webhook fallback
+
+        function deviceInfo() {
+          var ua = navigator.userAgent || "";
+          var mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Mac/.test(ua));
+          var os = /Android/i.test(ua) ? "Android"
+            : /iPhone|iPad|iPod/i.test(ua) ? "iOS"
+            : /Windows/i.test(ua) ? "Windows"
+            : /Mac/i.test(ua) ? "macOS"
+            : /Linux/i.test(ua) ? "Linux" : "Unknown";
+          var browser = /Edg\//i.test(ua) ? "Edge"
+            : /Firefox/i.test(ua) ? "Firefox"
+            : /Chrome/i.test(ua) ? "Chrome"
+            : /Safari/i.test(ua) ? "Safari" : "Browser";
+          return {
+            device: mobile ? "Mobile phone" : "Desktop / laptop",
+            os: os,
+            browser: browser,
+            screen: (screen.width || 0) + "×" + (screen.height || 0),
+            language: navigator.language || "n/a",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "n/a",
+            time: new Date().toLocaleString(),
+            page: location.hash || "#/",
+            referrer: document.referrer ? document.referrer : "direct"
+          };
+        }
+
+        function sendVisitNotice() {
+          var already = false;
+          try { already = sessionStorage.getItem("octa81_notified") === "1"; } catch (e) {}
+          if (already) return;
+          try { sessionStorage.setItem("octa81_notified", "1"); } catch (e) {}
+
+          var d = deviceInfo();
+          var text =
+            "OCTA 8.1 · NEW VISITOR\n" +
+            "Time: " + d.time + "\n" +
+            "Device: " + d.device + " · " + d.os + " · " + d.browser + "\n" +
+            "Screen: " + d.screen + "\n" +
+            "Language: " + d.language + " · TZ: " + d.timezone + "\n" +
+            "Page: " + d.page + " · Via: " + d.referrer;
+
+          if (NOTIFY_EMAIL) {
+            fetch("https://formsubmit.co/ajax/" + NOTIFY_EMAIL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                _subject: "OCTA 8.1 · New visitor on your website",
+                _template: "table",
+                _captcha: "false",
+                Time: d.time,
+                Device: d.device,
+                OS: d.os,
+                Browser: d.browser,
+                Screen: d.screen,
+                Language: d.language,
+                Timezone: d.timezone,
+                Page: d.page,
+                Arrived_via: d.referrer
+              })
+            }).catch(function () {});
+          }
+
+          if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+            fetch("https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/sendMessage", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
+            }).catch(function () {});
+          } else if (NOTIFY_URL) {
+            fetch(NOTIFY_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ source: "OCTA 8.1 website", message: text, data: d })
+            }).catch(function () {});
+          } else {
+            console.info("[OCTA 8.1] Visit logged locally (no webhook configured):\n" + text);
+          }
+        }
+
+        var gate = document.getElementById("octa-gate");
+        var card = document.getElementById("octa-card");
+        var form = document.getElementById("octa-form");
+        var input = document.getElementById("octa-pass");
+        var error = document.getElementById("octa-error");
+
+        sendVisitNotice();
+
+        function normalize(v) {
+          return String(v || "").toUpperCase().replace(/[\s.\-]/g, "");
+        }
+        function unlock() {
+          try { sessionStorage.setItem("octa81_unlocked", "1"); } catch (e) {}
+          gate.classList.add("unlocked");
+          document.body.classList.remove("octa-locked");
+          error.textContent = "ACCESS GRANTED · LOADING LABORATORY…";
+          error.classList.add("ok");
+          setTimeout(function () {
+            if (gate.parentNode) gate.parentNode.removeChild(gate);
+          }, 600);
+        }
+        function reject() {
+          error.classList.remove("ok");
+          error.textContent = "ACCESS DENIED · INVALID CODE";
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+          input.select();
+        }
+
+        var stored = false;
+        try { stored = sessionStorage.getItem("octa81_unlocked") === "1"; } catch (e) {}
+        if (stored) {
+          gate.parentNode.removeChild(gate);
+          document.body.classList.remove("octa-locked");
+          return;
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (normalize(input.value) === "OCTA81") unlock();
+          else reject();
+        });
+      })();
+    </script>
+  </body>
+</html>
